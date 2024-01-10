@@ -1,6 +1,11 @@
+# https://stackoverflow.com/a/43046744/8094047
+from ctypes import windll
+windll.shcore.SetProcessDpiAwareness(1)
+
+
 from enum import Enum
 
-from tkinter import Tk, Canvas, Event, Frame, Button, Menu
+from tkinter import Tk, Canvas, Event, Frame, Button, Menu, filedialog
 
 
 class Tool(Enum):
@@ -37,10 +42,10 @@ class App(Tk):
         self.canvas.bind("<Button-1>", self.mouse_left_down)
         self.canvas.bind("<B1-Motion>", self.mouse_left_move)
 
-        self.menubar = Menu(self)
+        self.menubar = Menu(self, tearoff=0)
         self.config(menu=self.menubar)
 
-        self.file_menu = Menu(self.menubar)
+        self.file_menu = Menu(self.menubar, tearoff=0)
         self.file_menu.add_command(
             label='Export Image',
             command=self.export_image,
@@ -52,8 +57,15 @@ class App(Tk):
         )
 
     def export_image(self):
-        # TODO
-        pass
+        file_types = [('PNG', '*.png'),  
+         ('JPEG', '*.jpg'), 
+         ('Custom Extension', '*.*')]
+        output_file_path = filedialog.asksaveasfilename(filetypes=file_types, defaultextension=file_types)
+        if not output_file_path:
+            return
+        with open(output_file_path, mode="wb") as output_file:
+            pass
+        
 
     def select_line_tool(self):
         self.tool = Tool.LINE
