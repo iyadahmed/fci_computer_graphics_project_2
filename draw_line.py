@@ -1,6 +1,6 @@
 from enum import Enum
 
-from tkinter import Tk, Canvas, Event, Frame, Button
+from tkinter import Tk, Canvas, Event, Frame, Button, Menu
 
 
 class Tool(Enum):
@@ -14,89 +14,100 @@ WINDOW_BACKGROUND_COLOR = "white"
 FILL_COLOR = "black"
 LINE_WIDTH = 2
 
-top = Tk()
-canvas = Canvas(
-    top, bg=WINDOW_BACKGROUND_COLOR, width=WINDOW_WIDTH, height=WINDOW_HEIGHT
-)
-canvas.pack()
+class App(Tk):
+    def __init__(self):
+        super().__init__()
+        self.canvas = Canvas(self, bg=WINDOW_BACKGROUND_COLOR, width=WINDOW_WIDTH, height=WINDOW_HEIGHT)
+        self.canvas.pack()
 
+        toolbar = Frame(self)
+        toolbar.pack(side="top", fill="x")
 
-lines: list[int] = []
-circles: list[int] = []
+        self.line_button = Button(toolbar, text="Line", command=self.select_line_tool, relief="sunken")
+        self.line_button.pack(side="left")
 
-tool = Tool.LINE
+        self.circle_button = Button(toolbar, text="Circle", command=self.select_circle_tool)
+        self.circle_button.pack(side="left")
 
+        self.lines: list[int] = []
+        self.circles: list[int] = []
 
-def select_line_tool():
-    global tool
-    tool = Tool.LINE
-    circle_button.config(relief="raised")
-    line_button.config(relief="sunken")
+        self.tool = Tool.LINE
 
+        self.canvas.bind("<Button-1>", self.mouse_left_down)
+        self.canvas.bind("<B1-Motion>", self.mouse_left_move)
 
-def select_circle_tool():
-    global tool
-    tool = Tool.CIRCLE
-    line_button.config(relief="raised")
-    circle_button.config(relief="sunken")
+        self.menubar = Menu(self)
+        self.config(menu=self.menubar)
 
-
-toolbar = Frame(top)
-toolbar.pack(side="top", fill="x")
-
-line_button = Button(toolbar, text="Line", command=select_line_tool, relief="sunken")
-line_button.pack(side="left")
-
-circle_button = Button(toolbar, text="Circle", command=select_circle_tool)
-circle_button.pack(side="left")
-
-
-def mouse_left_down(event: Event):
-    if tool == Tool.LINE:
-        line = canvas.create_line(
-            event.x, event.y, event.x, event.y, fill=FILL_COLOR, width=LINE_WIDTH
+        self.file_menu = Menu(self.menubar)
+        self.file_menu.add_command(
+            label='Export Image',
+            command=self.export_image,
         )
-        lines.append(line)
-    elif tool == Tool.CIRCLE:
-        r = 0
-        circle = canvas.create_oval(
-            event.x - r,
-            event.y - r,
-            event.x + r,
-            event.y + r,
-            fill="",
-            outline=FILL_COLOR,
-            width=LINE_WIDTH,
-        )
-        circles.append(circle)
-
-
-def mouse_left_move(event: Event):
-    if tool == Tool.LINE:
-        if len(lines) == 0:
-            return
-        line = lines[-1]
-        canvas.coords(
-            line, canvas.coords(line)[0], canvas.coords(line)[1], event.x, event.y
-        )
-    elif tool == Tool.CIRCLE:
-        if len(circles) == 0:
-            return
-        circle = circles[-1]
-        x_min, y_min, x_max, y_max = canvas.coords(circle)
-        center = ((x_min + x_max) / 2, (y_min + y_max) / 2)
-
-        r = ((event.x - center[0]) ** 2 + (event.y - center[1]) ** 2) ** 0.5
-        canvas.coords(
-            circle,
-            center[0] - r,
-            center[1] - r,
-            center[0] + r,
-            center[1] + r,
+        self.menubar.add_cascade(
+            label="File",
+            menu=self.file_menu,
+            underline=0
         )
 
+    def export_image(self):
+        # TODO
+        pass
 
-canvas.bind("<Button-1>", mouse_left_down)
-canvas.bind("<B1-Motion>", mouse_left_move)
+    def select_line_tool(self):
+        self.tool = Tool.LINE
+        self.circle_button.config(relief="raised")
+        self.line_button.config(relief="sunken")
 
-top.mainloop()
+    def select_circle_tool(self):
+        self.tool = Tool.CIRCLE
+        self.line_button.config(relief="raised")
+        self.circle_button.config(relief="sunken")
+
+    def mouse_left_down(self, event: Event):
+        if self.tool == Tool.LINE:
+            line = self.canvas.create_line(
+                event.x, event.y, event.x, event.y, fill=FILL_COLOR, width=LINE_WIDTH
+            )
+            self.lines.append(line)
+        elif self.tool == Tool.CIRCLE:
+            r = 0
+            circle = self.canvas.create_oval(
+                event.x - r,
+                event.y - r,
+                event.x + r,
+                event.y + r,
+                fill="",
+                outline=FILL_COLOR,
+                width=LINE_WIDTH,
+            )
+            self.circles.append(circle)
+
+    def mouse_left_move(self, event: Event):
+        if self.tool == Tool.LINE:
+            if len(self.lines) == 0:
+                return
+            line = self.lines[-1]
+            self.canvas.coords(
+                line, self.canvas.coords(line)[0], self.canvas.coords(line)[1], event.x, event.y
+            )
+        elif self.tool == Tool.CIRCLE:
+            if len(self.circles) == 0:
+                return
+            circle = self.circles[-1]
+            x_min, y_min, x_max, y_max = self.canvas.coords(circle)
+            center = ((x_min + x_max) / 2, (y_min + y_max) / 2)
+
+            r = ((event.x - center[0]) ** 2 + (event.y - center[1]) ** 2) ** 0.5
+            self.canvas.coords(
+                circle,
+                center[0] - r,
+                center[1] - r,
+                center[0] + r,
+                center[1] + r,
+            )
+
+
+app = App()
+app.mainloop()
