@@ -1,5 +1,6 @@
 # https://stackoverflow.com/a/43046744/8094047
 from ctypes import windll
+
 windll.shcore.SetProcessDpiAwareness(1)
 
 
@@ -19,19 +20,26 @@ WINDOW_BACKGROUND_COLOR = "white"
 FILL_COLOR = "black"
 LINE_WIDTH = 2
 
+
 class App(Tk):
     def __init__(self):
         super().__init__()
-        self.canvas = Canvas(self, bg=WINDOW_BACKGROUND_COLOR, width=WINDOW_WIDTH, height=WINDOW_HEIGHT)
+        self.canvas = Canvas(
+            self, bg=WINDOW_BACKGROUND_COLOR, width=WINDOW_WIDTH, height=WINDOW_HEIGHT
+        )
         self.canvas.pack()
 
         toolbar = Frame(self)
         toolbar.pack(side="top", fill="x")
 
-        self.line_button = Button(toolbar, text="Line", command=self.select_line_tool, relief="sunken")
+        self.line_button = Button(
+            toolbar, text="Line", command=self.select_line_tool, relief="sunken"
+        )
         self.line_button.pack(side="left")
 
-        self.circle_button = Button(toolbar, text="Circle", command=self.select_circle_tool)
+        self.circle_button = Button(
+            toolbar, text="Circle", command=self.select_circle_tool
+        )
         self.circle_button.pack(side="left")
 
         self.lines: list[int] = []
@@ -47,25 +55,20 @@ class App(Tk):
 
         self.file_menu = Menu(self.menubar, tearoff=0)
         self.file_menu.add_command(
-            label='Export Image',
+            label="Export Image",
             command=self.export_image,
         )
-        self.menubar.add_cascade(
-            label="File",
-            menu=self.file_menu,
-            underline=0
-        )
+        self.menubar.add_cascade(label="File", menu=self.file_menu, underline=0)
 
     def export_image(self):
-        file_types = [('PNG', '*.png'),  
-         ('JPEG', '*.jpg'), 
-         ('Custom Extension', '*.*')]
-        output_file_path = filedialog.asksaveasfilename(filetypes=file_types, defaultextension=file_types)
+        file_types = [("PNG", "*.png"), ("JPEG", "*.jpg"), ("Custom Extension", "*.*")]
+        output_file_path = filedialog.asksaveasfilename(
+            filetypes=file_types, defaultextension=file_types
+        )
         if not output_file_path:
             return
         with open(output_file_path, mode="wb") as output_file:
             pass
-        
 
     def select_line_tool(self):
         self.tool = Tool.LINE
@@ -102,7 +105,11 @@ class App(Tk):
                 return
             line = self.lines[-1]
             self.canvas.coords(
-                line, self.canvas.coords(line)[0], self.canvas.coords(line)[1], event.x, event.y
+                line,
+                self.canvas.coords(line)[0],
+                self.canvas.coords(line)[1],
+                event.x,
+                event.y,
             )
         elif self.tool == Tool.CIRCLE:
             if len(self.circles) == 0:
